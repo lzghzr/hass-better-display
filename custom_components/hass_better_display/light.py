@@ -40,7 +40,7 @@ class MonitorBrightnessLight(CoordinatorEntity, LightEntity):
     @property
     def is_on(self) -> bool:
         """Return true if light is on."""
-        return self._device.brightness > 0
+        return self._device._backlight_state == 'on'
 
     @property
     def brightness(self) -> int:
@@ -52,10 +52,9 @@ class MonitorBrightnessLight(CoordinatorEntity, LightEntity):
         if ATTR_BRIGHTNESS in kwargs:
             brightness = round(kwargs[ATTR_BRIGHTNESS] / 255, 2)
             await self._device.async_set_brightness(brightness)
-        # else:
-        #     await self._device.async_set_brightness(self._device.brightness)
+        else:
+            await self._device.async_set_backlight("on")
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the light off."""
-        # 禁用关闭功能，不执行任何操作
-        pass
+        await self._device.async_set_backlight("off")

@@ -26,12 +26,13 @@ class MonitorDevice:
         self.name = name
         self._base_url = base_url.rstrip('/')  # 移除末尾的斜杠
         self._brightness = 0.5
+        self._backlight_state = 'on'
         self._volume = 0.5
         self._mute_state = 'off'
         self._source = "0"
         # 添加 unique_id 属性
         self.unique_id = f"{DOMAIN}_{name}"
-        
+
         # 创建更新协调器
         self.coordinator = DataUpdateCoordinator(
             hass,
@@ -82,17 +83,22 @@ class MonitorDevice:
                     async with session.get(brightness_url) as resp:
                         if resp.status == 200:
                             self._brightness = float(await resp.text())
-                    
+
+                    # 获取背光状态
+                    backlight_url = f"{self._base_url}/get?feature=hardwareBacklight&name={self.name}"
+                    async with session.get(backlight_url) as resp:
+                        if resp.status == 200:
+                            self._backlight_state = str(await resp.text()).strip()
+
                     # 获取输入源
                     source_url = f"{self._base_url}/get?feature=ddc&vcp=inputSelect&name={self.name}"
                     async with session.get(source_url) as resp:
                         if resp.status == 200:
                             self._source = str(await resp.text()).strip()
-                        else:
-                            self._source = "0"
 
                     return {
                         "brightness": self._brightness,
+                        "backlight_state": self._backlight_state,
                         "volume": self._volume,
                         "source": self._source,
                         "mute_state": self._mute_state
@@ -112,6 +118,20 @@ class MonitorDevice:
                         await self.coordinator.async_request_refresh()
         except Exception as err:
             _LOGGER.error("Error setting brightness: %s", err)
+
+    async def async_set_backlight(self, backlight_value: str) -> None:
+        """Set Backlight."""
+        try:
+            url = f"{self._base_url}/set?feature=hardwareBacklight&name={self.name}&value={backlight_value}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        _LOGGER.info("Successfully set backlight: %s", backlight_value)
+                        # 强制更新数据
+                        self._backlight_state = backlight_value
+                        await self.coordinator.async_request_refresh()
+        except Exception as err:
+            _LOGGER.error("error setting backlight: %s", err)
 
     async def async_set_volume(self, volume: float) -> None:
         """Set monitor volume."""
@@ -159,15 +179,20 @@ class MonitorDevice:
         return self._brightness
 
     @property
+    def backlight_state(self) -> str:
+        """Return the backlight of the monitor."""
+        return self._backlight_state
+
+    @property
     def volume(self) -> float:
         """Return the volume of the monitor."""
         return self._volume
-    
+
     @property
     def source(self) -> str:
         """Return the source of the monitor."""
         return self._source
-    
+
     @property
     def mute_state(self) -> str:
         return self._mute_state
@@ -175,4 +200,4 @@ class MonitorDevice:
     @property
     def device_info(self):
         """Return device info."""
-        return self._attr_device_info 
+        return self._attr_device_info

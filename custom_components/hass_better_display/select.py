@@ -40,13 +40,11 @@ async def async_setup_entry(
         # 获取旧的select_entity
         old_select_entity = hass.data[DOMAIN]["entities"][select_entity._attr_unique_id]
         await old_select_entity.update_config(entry)
-        
+
     # 注册更新监听器
     config_entry.async_on_unload(
         config_entry.add_update_listener(config_update)
     )
-
-    
 
 class MonitorSelect(SelectEntity):
     """Representation of a Monitor Display select."""
@@ -62,11 +60,11 @@ class MonitorSelect(SelectEntity):
 
     def _generate_options(self) -> list[str]:
         """生成选项列表."""
-        return [f"切换到 {key}" for key in self._source_list.keys()]
+        return [f"{key}" for key in self._source_list.keys()]
 
     def _generate_source_mapping(self) -> Dict[str, str]:
         """生成源映射."""
-        return {value: f"切换到 {key}" for key, value in self._source_list.items()}
+        return {value: f"{key}" for key, value in self._source_list.items()}
 
     @property
     def current_option(self) -> str | None:
@@ -77,7 +75,6 @@ class MonitorSelect(SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        option = option.split(" ")[1]
         if option in self._source_list.keys():
             await self._device.switch_source(self._source_list.get(option))
 
