@@ -5,6 +5,7 @@ CONF_BASE_URL = "base_url"
 CONF_TOKEN = "token"
 CONF_DEVICE_NAME = "device_name"
 CONF_SOURCE_LIST = "source_list"
+CONF_BACKLIGHT_OFF = "backlight_off"
 
 DEFAULT_NAME = "HASS Better Display"
 

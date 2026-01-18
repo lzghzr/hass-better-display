@@ -6,7 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_BACKLIGHT_OFF, CONF_DEVICE_NAME
 from .device import MonitorDevice
 
 
@@ -24,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_DEVICE_NAME],
         entry.data[CONF_BASE_URL],
         entry.data[CONF_TOKEN],
+        entry.data[CONF_BACKLIGHT_OFF],
     )
     hass.data[DOMAIN][entry.entry_id] = device
 

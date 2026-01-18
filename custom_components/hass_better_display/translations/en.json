@@ -8,7 +8,8 @@
                     "device_name": "Monitor Name",
                     "base_url": "API Base URL (e.g., http://mio.local:55777)",
                     "token": "To safeguard access, a special token can optionally be defined in Settings",
-                    "source_list": "Source List (e.g., hdmi1:14,hdmi2:15,dp:16)"
+                    "source_list": "Source List (e.g., hdmi1:14,hdmi2:15,dp:16)",
+                    "backlight_off": "Backlight Off Value (default, 4)"
                 }
             }
         },

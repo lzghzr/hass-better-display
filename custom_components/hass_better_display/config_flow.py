@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME, CONF_SOURCE_LIST, DEFAULT_NAME
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME, CONF_SOURCE_LIST, CONF_BACKLIGHT_OFF, DEFAULT_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ class MonitorControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_BASE_URL: user_input[CONF_BASE_URL],
                         CONF_TOKEN: user_input[CONF_TOKEN],
                         CONF_SOURCE_LIST: source_list,
+                        CONF_BACKLIGHT_OFF: user_input[CONF_BACKLIGHT_OFF],
                     },
                 )
             except ValueError:
@@ -54,6 +55,7 @@ class MonitorControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_SOURCE_LIST,
                         default="hdmi1:15,hdmi2:16,dp:17"
                     ): str,  # 格式: "key1:value1,key2:value2"
+                    vol.Optional(CONF_BACKLIGHT_OFF, default=4): int,
                 }
             ),
             errors=errors,
@@ -97,6 +99,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_BASE_URL: user_input[CONF_BASE_URL],
                         CONF_TOKEN: user_input[CONF_TOKEN],
                         CONF_SOURCE_LIST: source_list,
+                        CONF_BACKLIGHT_OFF: user_input[CONF_BACKLIGHT_OFF]
                     }
                 )
 
@@ -132,6 +135,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_SOURCE_LIST,
                         default=default_source_list
                     ): str,
+                    vol.Optional(
+                        CONF_BACKLIGHT_OFF,
+                        default=self._config_entry.data.get(CONF_BACKLIGHT_OFF, 4)
+                    ): int,
                 }
             ),
             errors=errors,

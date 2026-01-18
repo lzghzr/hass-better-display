@@ -3,8 +3,9 @@ import logging
 import aiohttp
 from datetime import timedelta
 import async_timeout
+import asyncio
 
-from custom_components.hass_better_display.const import CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME, DOMAIN
+from custom_components.hass_better_display.const import CONF_BASE_URL, CONF_TOKEN, CONF_BACKLIGHT_OFF, CONF_DEVICE_NAME, DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -21,6 +22,7 @@ class MonitorDevice:
         name: str,
         base_url: str,
         token: str,
+        backlight_off: int,
     ) -> None:
         """Initialize the device."""
         self.hass = hass
@@ -28,6 +30,7 @@ class MonitorDevice:
         self._base_url = base_url.rstrip('/')  # 移除末尾的斜杠
         self._token = token
         self._brightness = 0.5
+        self._backlight_off = backlight_off
         self._backlight_state = 'on'
         self._volume = 0.5
         self._mute_state = 'off'
@@ -62,6 +65,7 @@ class MonitorDevice:
         # _LOGGER.info("更新配置: %s", config_entry.data)
         self._base_url = config_entry.data[CONF_BASE_URL]
         self._token = config_entry.data[CONF_TOKEN]
+        self._backlight_off = config_entry.data[CONF_BACKLIGHT_OFF]
         self.name = config_entry.data[CONF_DEVICE_NAME]
 
     async def _async_update_data(self):
@@ -125,13 +129,15 @@ class MonitorDevice:
     async def async_set_backlight(self, backlight_value: str) -> None:
         """Set Backlight."""
         try:
-            url = f"{self._base_url}/set?token={self._token}&feature=hardwareBacklight&name={self.name}&value={backlight_value}"
+            power_mode = 1 if backlight_value == 'on' else self._backlight_off
+            url = f"{self._base_url}/set?token={self._token}&feature=ddc&vcp=powerMode&name={self.name}&value={power_mode}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
                         _LOGGER.info("Successfully set backlight: %s", backlight_value)
                         # 强制更新数据
                         self._backlight_state = backlight_value
+                        await asyncio.sleep(5)
                         await self.coordinator.async_request_refresh()
         except Exception as err:
             _LOGGER.error("error setting backlight: %s", err)
