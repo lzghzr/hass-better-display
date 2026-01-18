@@ -88,10 +88,10 @@ class MonitorDevice:
                             self._brightness = float(await resp.text())
 
                     # 获取背光状态
-                    backlight_url = f"{self._base_url}/get?token={self._token}&feature=hardwareBacklight&name={self.name}"
+                    backlight_url = f"{self._base_url}/get?token={self._token}&feature=ddc&vcp=powerMode&name={self.name}"
                     async with session.get(backlight_url) as resp:
                         if resp.status == 200:
-                            self._backlight_state = str(await resp.text()).strip()
+                            self._backlight_state = "on" if int(await resp.text()) == 1 else "off"
 
                     # 获取输入源
                     source_url = f"{self._base_url}/get?token={self._token}&feature=ddc&vcp=inputSelect&name={self.name}"
