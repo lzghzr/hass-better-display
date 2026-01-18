@@ -4,7 +4,7 @@ import aiohttp
 from datetime import timedelta
 import async_timeout
 
-from custom_components.hass_better_display.const import CONF_BASE_URL, CONF_DEVICE_NAME, DOMAIN
+from custom_components.hass_better_display.const import CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME, DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -20,11 +20,13 @@ class MonitorDevice:
         hass: HomeAssistant,
         name: str,
         base_url: str,
+        token: str,
     ) -> None:
         """Initialize the device."""
         self.hass = hass
         self.name = name
         self._base_url = base_url.rstrip('/')  # 移除末尾的斜杠
+        self._token = token
         self._brightness = 0.5
         self._backlight_state = 'on'
         self._volume = 0.5
@@ -59,6 +61,7 @@ class MonitorDevice:
         """更新配置."""
         # _LOGGER.info("更新配置: %s", config_entry.data)
         self._base_url = config_entry.data[CONF_BASE_URL]
+        self._token = config_entry.data[CONF_TOKEN]
         self.name = config_entry.data[CONF_DEVICE_NAME]
 
     async def _async_update_data(self):
@@ -67,31 +70,31 @@ class MonitorDevice:
             async with async_timeout.timeout(10):
                 async with aiohttp.ClientSession() as session:
                     # 获取音量
-                    volume_url = f"{self._base_url}/get?feature=volume&name={self.name}"
+                    volume_url = f"{self._base_url}/get?token={self._token}&feature=volume&name={self.name}"
                     async with session.get(volume_url) as resp:
                         if resp.status == 200:
                             self._volume = float(await resp.text())
 
                     # 获取静音状态
-                    volume_url = f"{self._base_url}/get?feature=mute&name={self.name}"
+                    volume_url = f"{self._base_url}/get?token={self._token}&feature=mute&name={self.name}"
                     async with session.get(volume_url) as resp:
                         if resp.status == 200:
                             self._mute_state = str(await resp.text()).strip()
 
                     # 获取亮度
-                    brightness_url = f"{self._base_url}/get?feature=brightness&name={self.name}"
+                    brightness_url = f"{self._base_url}/get?token={self._token}&feature=brightness&name={self.name}"
                     async with session.get(brightness_url) as resp:
                         if resp.status == 200:
                             self._brightness = float(await resp.text())
 
                     # 获取背光状态
-                    backlight_url = f"{self._base_url}/get?feature=hardwareBacklight&name={self.name}"
+                    backlight_url = f"{self._base_url}/get?token={self._token}&feature=hardwareBacklight&name={self.name}"
                     async with session.get(backlight_url) as resp:
                         if resp.status == 200:
                             self._backlight_state = str(await resp.text()).strip()
 
                     # 获取输入源
-                    source_url = f"{self._base_url}/get?feature=ddc&vcp=inputSelect&name={self.name}"
+                    source_url = f"{self._base_url}/get?token={self._token}&feature=ddc&vcp=inputSelect&name={self.name}"
                     async with session.get(source_url) as resp:
                         if resp.status == 200:
                             self._source = str(await resp.text()).strip()
@@ -109,7 +112,7 @@ class MonitorDevice:
     async def async_set_brightness(self, brightness: float) -> None:
         """Set monitor brightness."""
         try:
-            url = f"{self._base_url}/set?feature=brightness&name={self.name}&value={brightness}"
+            url = f"{self._base_url}/set?token={self._token}&feature=brightness&name={self.name}&value={brightness}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -122,7 +125,7 @@ class MonitorDevice:
     async def async_set_backlight(self, backlight_value: str) -> None:
         """Set Backlight."""
         try:
-            url = f"{self._base_url}/set?feature=hardwareBacklight&name={self.name}&value={backlight_value}"
+            url = f"{self._base_url}/set?token={self._token}&feature=hardwareBacklight&name={self.name}&value={backlight_value}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -136,7 +139,7 @@ class MonitorDevice:
     async def async_set_volume(self, volume: float) -> None:
         """Set monitor volume."""
         try:
-            url = f"{self._base_url}/set?feature=volume&name={self.name}&value={volume}"
+            url = f"{self._base_url}/set?token={self._token}&feature=volume&name={self.name}&value={volume}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -149,7 +152,7 @@ class MonitorDevice:
     async def async_mute_volume(self, mute_value: str) -> None:
         """Set monitor volume."""
         try:
-            url = f"{self._base_url}/set?feature=mute&name={self.name}&value={mute_value}"
+            url = f"{self._base_url}/set?token={self._token}&feature=mute&name={self.name}&value={mute_value}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -162,7 +165,7 @@ class MonitorDevice:
     async def switch_source(self, source_value: str) -> None:
         """Switch input source."""
         try:
-            url = f"{self._base_url}/set?vcp=inputSelect&name={self.name}&ddc={source_value}"
+            url = f"{self._base_url}/set?token={self._token}&vcp=inputSelect&name={self.name}&ddc={source_value}"
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status == 200:

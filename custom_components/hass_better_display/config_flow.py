@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN, CONF_BASE_URL, CONF_DEVICE_NAME, CONF_SOURCE_LIST, DEFAULT_NAME
+from .const import DOMAIN, CONF_BASE_URL, CONF_TOKEN, CONF_DEVICE_NAME, CONF_SOURCE_LIST, DEFAULT_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,12 +31,12 @@ class MonitorControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 for item in user_input[CONF_SOURCE_LIST].split(','):
                     key, value = item.strip().split(':')
                     source_list[key.strip()] = value.strip()
-                
                 return self.async_create_entry(
                     title=user_input[CONF_DEVICE_NAME],
                     data={
                         CONF_DEVICE_NAME: user_input[CONF_DEVICE_NAME],
                         CONF_BASE_URL: user_input[CONF_BASE_URL],
+                        CONF_TOKEN: user_input[CONF_TOKEN],
                         CONF_SOURCE_LIST: source_list,
                     },
                 )
@@ -49,8 +49,9 @@ class MonitorControlConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_DEVICE_NAME, default=DEFAULT_NAME): str,
                     vol.Required(CONF_BASE_URL): str,  # 例如: http://192.168.6.248:55777
+                    vol.Optional(CONF_TOKEN): str,
                     vol.Optional(
-                        CONF_SOURCE_LIST, 
+                        CONF_SOURCE_LIST,
                         default="hdmi1:15,hdmi2:16,dp:17"
                     ): str,  # 格式: "key1:value1,key2:value2"
                 }
@@ -94,6 +95,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     data={
                         CONF_DEVICE_NAME: user_input[CONF_DEVICE_NAME],
                         CONF_BASE_URL: user_input[CONF_BASE_URL],
+                        CONF_TOKEN: user_input[CONF_TOKEN],
                         CONF_SOURCE_LIST: source_list,
                     }
                 )
@@ -123,10 +125,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         default=self._config_entry.data.get(CONF_BASE_URL, "")
                     ): str,
                     vol.Optional(
+                        CONF_TOKEN,
+                        default=self._config_entry.data.get(CONF_TOKEN, "")
+                    ): str,
+                    vol.Optional(
                         CONF_SOURCE_LIST,
                         default=default_source_list
                     ): str,
                 }
             ),
             errors=errors,
-        ) 
+        )

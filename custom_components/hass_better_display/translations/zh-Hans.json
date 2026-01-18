@@ -6,7 +6,8 @@
                 "description": "设置您的显示器控制集成。设备名称需要与您的显示器名称匹配（例如：GE278UR）",
                 "data": {
                     "device_name": "设备名称",
-                    "base_url": "基础URL",
+                    "base_url": "基础URL (格式: http://mio.local:55777)",
+                    "token": "安全令牌",
                     "source_list": "输入源列表 (格式: hdmi1:14,hdmi2:15,dp:16)"
                 }
             }
@@ -28,7 +29,8 @@
                 "description": "修改显示器控制集成的配置",
                 "data": {
                     "device_name": "设备名称",
-                    "base_url": "基础URL",
+                    "base_url": "基础URL (格式: http://mio.local:55777)",
+                    "token": "安全令牌",
                     "source_list": "输入源列表 (格式: hdmi1:14,hdmi2:15,dp:16)"
                 }
             }
@@ -37,4 +39,4 @@
             "invalid_source_list": "输入源列表格式无效，请使用正确的格式，例如：hdmi1:14,hdmi2:15,dp:16"
         }
     }
-} 
+}

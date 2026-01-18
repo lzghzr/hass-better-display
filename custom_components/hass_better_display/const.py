@@ -2,10 +2,11 @@
 DOMAIN = "hass_better_display"
 
 CONF_BASE_URL = "base_url"
+CONF_TOKEN = "token"
 CONF_DEVICE_NAME = "device_name"
 CONF_SOURCE_LIST = "source_list"
 
 DEFAULT_NAME = "HASS Better Display"
 
 SERVICE_SET_BRIGHTNESS = "set_brightness"
-SERVICE_SET_VOLUME = "set_volume" 
+SERVICE_SET_VOLUME = "set_volume"
